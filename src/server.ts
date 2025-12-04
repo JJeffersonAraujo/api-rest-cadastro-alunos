@@ -1,14 +1,22 @@
+import "reflect-metadata";
 import express from "express";
-//import cors from "cors";
-import taskRoutes from "./routes/taskRoutes";
+import { AppDataSource } from "./database/data-source";
+import alunoRoutes from "./routes/AlunoRoutes";
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-
-//app.use(cors());
 app.use(express.json());
-app.use("/api", taskRoutes);
 
-app.listen(PORT, () => {
-  console.log(`Servidor rodando em http://localhost:${PORT}/api`);
-});
+// Registrar as rotas
+app.use(alunoRoutes);
+
+AppDataSource.initialize()
+  .then(() => {
+    console.log("Conexão com o banco estabelecida!");
+
+    app.listen(3000, () => {
+      console.log("API rodando na porta 3000");
+    });
+  })
+  .catch((err) => {
+    console.error("Erro ao conectar no banco:", err);
+  });
