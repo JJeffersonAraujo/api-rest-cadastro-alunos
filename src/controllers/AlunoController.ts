@@ -1,8 +1,11 @@
 /**
  * Controller responsável pelas rotas relacionadas aos alunos.
- * 
+ *
  * Este arquivo demonstra como usar routing-controllers de maneira simples,
- * limpa e organizada — sem usar req/res diretamente.
+ * limpa e organizada — evitando o uso direto de req/res.
+ * 
+ * Aqui utilizamos decorators como @JsonController(), @Get(), @Post()
+ * para criar rotas de forma declarativa.
  */
 
 import {
@@ -20,22 +23,23 @@ import {
 import { AlunoService } from "../services/AlunoService";
 
 /**
- * @JsonController() indica que esta classe contém rotas REST que retornam JSON automaticamente.
- * O prefixo "/alunos" será aplicado a todas as rotas deste controller.
+ * @JsonController() indica que a classe contém rotas REST que retornam JSON automaticamente.
  *
+ * O prefixo "/alunos" será aplicado a todas as rotas deste controller.
+ * 
  * Exemplo final das rotas geradas:
- *  - GET /alunos
- *  - GET /alunos/:id
- *  - POST /alunos
- *  - PUT /alunos/:id
+ *  - GET    /alunos
+ *  - GET    /alunos/:id
+ *  - POST   /alunos
+ *  - PUT    /alunos/:id
  *  - DELETE /alunos/:id
  */
 @JsonController("/alunos")
 export class AlunoController {
   
   /**
-   * Dependência: AlunoService controla a lógica de negócio e o acesso ao banco.
-   * Aqui estamos apenas instanciando ele para uso nos métodos abaixo.
+   * Dependência: AlunoService controla a lógica de negócio e acesso ao banco.
+   * Aqui, apenas instanciamos para uso nos métodos abaixo.
    */
   private alunoService = new AlunoService();
 
@@ -45,8 +49,8 @@ export class AlunoController {
   /**
    * Lista todos os alunos cadastrados.
    *
-   * @Get() significa que este método responde ao método HTTP GET.
-   * Não usamos req/res — routing-controllers retorna o valor automaticamente.
+   * @Get() define que o método responde ao método HTTP GET.
+   * routing-controllers retorna o valor automaticamente em JSON.
    */
   @Get()
   async listar() {
@@ -64,8 +68,9 @@ export class AlunoController {
   /**
    * Busca um aluno específico pelo ID.
    *
-   * @Param("id") extrai o parâmetro da rota automaticamente.
-   * Caso o aluno não exista, uma exceção NotFoundError gera HTTP 404.
+   * @Param("id") extrai o parâmetro da URL automaticamente.
+   * 
+   * Caso o aluno não exista, uma NotFoundError gera HTTP 404 automaticamente.
    */
   @Get("/:id")
   async buscar(@Param("id") id: number) {
@@ -89,8 +94,8 @@ export class AlunoController {
   /**
    * Cria um novo aluno.
    *
-   * @Body() automaticamente pega o corpo da requisição (JSON enviado).
-   * @HttpCode(201) define o status correto para criação.
+   * @Body() automaticamente lê o JSON enviado na requisição.
+   * @HttpCode(201) define o status correto para criação (Created).
    */
   @Post()
   @HttpCode(201)
@@ -107,9 +112,9 @@ export class AlunoController {
   //  PUT /alunos/:id
   // -------------------------------------------------------------
   /**
-   * Atualiza os dados de um aluno existente pelo ID.
+   * Atualiza dados de um aluno existente.
    *
-   * Caso o ID não exista, retorna 404 automaticamente com NotFoundError.
+   * Caso o ID não exista, retornará HTTP 404 via NotFoundError.
    */
   @Put("/:id")
   async atualizar(
@@ -136,7 +141,7 @@ export class AlunoController {
   /**
    * Remove um aluno pelo ID.
    *
-   * Caso não exista, retorna 404.
+   * Caso o aluno não exista, retorna HTTP 404.
    */
   @Delete("/:id")
   async deletar(@Param("id") id: number) {

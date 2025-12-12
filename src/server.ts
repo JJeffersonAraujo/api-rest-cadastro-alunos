@@ -1,27 +1,22 @@
+// src/server.ts
+
 import "reflect-metadata";
 import { createExpressServer } from "routing-controllers";
 import { AppDataSource } from "./database/data-source";
+import { createSwaggerApp } from "./swagger";
 
-// importar controllers
-import { AuthController } from "./controllers/AuthController";
-import { AlunoController } from "./controllers/AlunoController";
+const app = createExpressServer({
+  controllers: [__dirname + "/controllers/*.ts"],
+});
 
-AppDataSource.initialize()
-  .then(() => {
-    console.log("Conexão com o banco estabelecida!");
+const swaggerApp = createSwaggerApp();
+app.use(swaggerApp); // adiciona o /docs à API
 
-    // cria o servidor express usando routing-controllers
-    const app = createExpressServer({
-      controllers: [
-        AuthController,
-        AlunoController
-      ],
-    });
+AppDataSource.initialize().then(() => {
+  console.log("Conectado ao banco");
 
-    app.listen(3000, () => {
-      console.log("🚀 API rodando na porta 3000 usando routing-controllers");
-    });
-  })
-  .catch((err) => {
-    console.error("Erro ao conectar no banco:", err);
+  app.listen(3000, () => {
+    console.log("Servidor rodando na porta 3000");
+    console.log("Swagger disponível em: http://localhost:3000/docs");
   });
+});
