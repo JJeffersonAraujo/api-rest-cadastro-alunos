@@ -8,7 +8,6 @@
     "start": "node dist/server.js",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "migration:run": "typeorm-ts-node-commonjs migration:run -d src/database/data-source.ts"
-
   },
   "keywords": [],
   "author": "",
@@ -21,10 +20,13 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
     "pg": "^8.16.3",
     "reflect-metadata": "^0.2.2",
+    "routing-controllers": "^0.11.3",
     "typeorm": "^0.3.27"
   }
 }

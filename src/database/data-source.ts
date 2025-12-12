@@ -2,6 +2,7 @@ import "reflect-metadata";
 import 'dotenv/config';
 import { DataSource } from "typeorm";
 import { Aluno } from "../entity/Aluno";
+import { User } from "../entity/User";
 
 export const AppDataSource = new DataSource({
   type: "postgres",
@@ -11,6 +12,6 @@ export const AppDataSource = new DataSource({
   ssl: {
     rejectUnauthorized: false
   },
-  entities: [Aluno],
+  entities: [Aluno, User],
   migrations: ["src/migrations/*.ts"]
 });

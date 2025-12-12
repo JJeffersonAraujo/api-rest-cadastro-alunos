@@ -1,78 +1,156 @@
-import { Request, Response } from "express";
+/**
+ * Controller responsável pelas rotas relacionadas aos alunos.
+ * 
+ * Este arquivo demonstra como usar routing-controllers de maneira simples,
+ * limpa e organizada — sem usar req/res diretamente.
+ */
+
+import {
+  JsonController,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Param,
+  Body,
+  HttpCode,
+  NotFoundError,
+} from "routing-controllers";
+
 import { AlunoService } from "../services/AlunoService";
 
+/**
+ * @JsonController() indica que esta classe contém rotas REST que retornam JSON automaticamente.
+ * O prefixo "/alunos" será aplicado a todas as rotas deste controller.
+ *
+ * Exemplo final das rotas geradas:
+ *  - GET /alunos
+ *  - GET /alunos/:id
+ *  - POST /alunos
+ *  - PUT /alunos/:id
+ *  - DELETE /alunos/:id
+ */
+@JsonController("/alunos")
 export class AlunoController {
+  
+  /**
+   * Dependência: AlunoService controla a lógica de negócio e o acesso ao banco.
+   * Aqui estamos apenas instanciando ele para uso nos métodos abaixo.
+   */
   private alunoService = new AlunoService();
 
-  async listar(req: Request, res: Response) {
+  // -------------------------------------------------------------
+  //  GET /alunos
+  // -------------------------------------------------------------
+  /**
+   * Lista todos os alunos cadastrados.
+   *
+   * @Get() significa que este método responde ao método HTTP GET.
+   * Não usamos req/res — routing-controllers retorna o valor automaticamente.
+   */
+  @Get()
+  async listar() {
     try {
-      const alunos = await this.alunoService.getAlunos();
-      return res.json(alunos);
+      return await this.alunoService.getAlunos();
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ mensagem: "Erro ao listar alunos" });
+      throw new Error("Erro ao listar alunos");
     }
   }
 
-  async buscar(req: Request, res: Response) {
+  // -------------------------------------------------------------
+  //  GET /alunos/:id
+  // -------------------------------------------------------------
+  /**
+   * Busca um aluno específico pelo ID.
+   *
+   * @Param("id") extrai o parâmetro da rota automaticamente.
+   * Caso o aluno não exista, uma exceção NotFoundError gera HTTP 404.
+   */
+  @Get("/:id")
+  async buscar(@Param("id") id: number) {
     try {
-      const id = Number(req.params.id);
       const aluno = await this.alunoService.getAluno(id);
 
       if (!aluno) {
-        return res.status(404).json({ mensagem: "Aluno não encontrado" });
+        throw new NotFoundError("Aluno não encontrado");
       }
 
-      return res.json(aluno);
+      return aluno;
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ mensagem: "Erro ao buscar aluno" });
+      throw error;
     }
   }
 
-  async criar(req: Request, res: Response) {
+  // -------------------------------------------------------------
+  //  POST /alunos
+  // -------------------------------------------------------------
+  /**
+   * Cria um novo aluno.
+   *
+   * @Body() automaticamente pega o corpo da requisição (JSON enviado).
+   * @HttpCode(201) define o status correto para criação.
+   */
+  @Post()
+  @HttpCode(201)
+  async criar(@Body() dados: any) {
     try {
-      const dados = req.body;
-      const alunoCriado = await this.alunoService.criarAluno(dados);
-
-      return res.status(201).json(alunoCriado);
+      return await this.alunoService.criarAluno(dados);
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ mensagem: "Erro ao criar aluno" });
+      throw new Error("Erro ao criar aluno");
     }
   }
 
-  async atualizar(req: Request, res: Response) {
+  // -------------------------------------------------------------
+  //  PUT /alunos/:id
+  // -------------------------------------------------------------
+  /**
+   * Atualiza os dados de um aluno existente pelo ID.
+   *
+   * Caso o ID não exista, retorna 404 automaticamente com NotFoundError.
+   */
+  @Put("/:id")
+  async atualizar(
+    @Param("id") id: number,
+    @Body() dados: any
+  ) {
     try {
-      const id = Number(req.params.id);
-      const dados = req.body;
-
       const alunoAtualizado = await this.alunoService.atualizarAluno(id, dados);
 
       if (!alunoAtualizado) {
-        return res.status(404).json({ mensagem: "Aluno não encontrado" });
+        throw new NotFoundError("Aluno não encontrado");
       }
 
-      return res.json(alunoAtualizado);
+      return alunoAtualizado;
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ mensagem: "Erro ao atualizar aluno" });
+      throw error;
     }
   }
 
-  async deletar(req: Request, res: Response) {
+  // -------------------------------------------------------------
+  //  DELETE /alunos/:id
+  // -------------------------------------------------------------
+  /**
+   * Remove um aluno pelo ID.
+   *
+   * Caso não exista, retorna 404.
+   */
+  @Delete("/:id")
+  async deletar(@Param("id") id: number) {
     try {
-      const id = Number(req.params.id);
       const deletado = await this.alunoService.deletarAluno(id);
 
       if (!deletado) {
-        return res.status(404).json({ mensagem: "Aluno não encontrado" });
+        throw new NotFoundError("Aluno não encontrado");
       }
 
-      return res.json({ mensagem: "Aluno removido com sucesso" });
+      return { mensagem: "Aluno removido com sucesso" };
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ mensagem: "Erro ao remover aluno" });
+      throw error;
     }
   }
 }

@@ -1,20 +1,25 @@
 import "reflect-metadata";
-import express from "express";
+import { createExpressServer } from "routing-controllers";
 import { AppDataSource } from "./database/data-source";
-import alunoRoutes from "./routes/AlunoRoutes";
 
-const app = express();
-app.use(express.json());
-
-// Registrar as rotas
-app.use(alunoRoutes);
+// importar controllers
+import { AuthController } from "./controllers/AuthController";
+import { AlunoController } from "./controllers/AlunoController";
 
 AppDataSource.initialize()
   .then(() => {
     console.log("Conexão com o banco estabelecida!");
 
+    // cria o servidor express usando routing-controllers
+    const app = createExpressServer({
+      controllers: [
+        AuthController,
+        AlunoController
+      ],
+    });
+
     app.listen(3000, () => {
-      console.log("API rodando na porta 3000");
+      console.log("🚀 API rodando na porta 3000 usando routing-controllers");
     });
   })
   .catch((err) => {
