@@ -3,6 +3,7 @@ import { AppDataSource } from "../database/data-source";
 import { User } from "../entity/User";
 import bcrypt from "bcryptjs";
 import { OpenAPI } from "routing-controllers-openapi";
+import { gerarToken } from "../services/jwtService";
 
 @Controller("/auth")
 export class AuthController {
@@ -11,44 +12,6 @@ export class AuthController {
   @OpenAPI({
     summary: "Registrar novo usuário",
     description: "Cria um usuário com nome, email e senha criptografada.",
-    requestBody: {
-      content: {
-        "application/json": {
-          schema: {
-            type: "object",
-            properties: {
-              name: { type: "string" },
-              email: { type: "string" },
-              senha: { type: "string" }
-            },
-            required: ["name", "email", "senha"]
-          }
-        }
-      }
-    },
-    responses: {
-      200: {
-        description: "Usuário criado com sucesso",
-        content: {
-          "application/json": {
-            schema: {
-              type: "object",
-              properties: {
-                message: { type: "string" },
-                user: {
-                  type: "object",
-                  properties: {
-                    id: { type: "number" },
-                    name: { type: "string" },
-                    email: { type: "string" }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
   })
   async registro(@Body() body: any) {
     const { name, email, senha } = body;
@@ -66,7 +29,42 @@ export class AuthController {
 
     return {
       message: "Usuário registrado com sucesso.",
-      user: userSalvo
+      user: {
+        id: userSalvo.id,
+        name: userSalvo.name,
+        email: userSalvo.email,
+      },
     };
+  }
+
+  // 🔑 LOGIN COM JWT
+  @Post("/login")
+  @OpenAPI({
+    summary: "Login",
+    description: "Autentica o usuário e retorna um token JWT",
+  })
+  async login(@Body() body: any) {
+    const { email, senha } = body;
+
+    const repoUser = AppDataSource.getRepository(User);
+
+    const user = await repoUser.findOne({ where: { email } });
+
+    if (!user) {
+      return { message: "Credenciais inválidas" };
+    }
+
+    const senhaValida = await bcrypt.compare(senha, user.senha);
+
+    if (!senhaValida) {
+      return { message: "Credenciais inválidas" };
+    }
+
+    const token = gerarToken({
+      id: user.id,
+      email: user.email,
+    });
+
+    return { token };
   }
 }
