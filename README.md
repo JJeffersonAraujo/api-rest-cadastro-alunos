@@ -77,43 +77,61 @@ npm install
 ## 5. VARIÁVEIS DE AMBIENTE (.env)
 ------------------------------
 
-Exemplo de arquivo .env:
+Crie um arquivo .env na raiz do projeto com as seguintes variáveis:
 
-DATABASE_URL=postgresql://usuario:senha@host.neon.tech/dbname
-JWT_SECRET=minha_chave_super_secreta
+DATABASE_URL="postgresql://neondb_owner:npg_7LyJwWs1RkYK@ep-aged-silence-adcwgpdm-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+NODE_ENV=development
+
+JWT_SECRET=super_secret_key_alunos
 JWT_EXPIRES_IN=1d
 
 ----------------------------------------------------------------
 
 ## 6. AUTENTICAÇÃO (JWT)
 --------------------
-A API utiliza JWT para proteger rotas sensíveis.
+A API utiliza autenticação baseada em JWT (JSON Web Token).
 
-Fluxo:
-1. Usuário se registra
-2. Usuário realiza login
-3. API retorna um token JWT
-4. O token deve ser enviado no header Authorization
+Fluxo de autenticação:
+1. O usuário se registra via `POST /auth/register`
+2. O usuário faz login via `POST /auth/login`
+3. A API retorna um token JWT
+4. O token deve ser enviado no header `Authorization` no formato:
 
-Exemplo:
-Authorization: Bearer SEU_TOKEN_JWT
+Authorization: Bearer SEU_TOKEN_AQUI
 
-As rotas de alunos são protegidas por autenticação.
+5. As rotas de alunos só podem ser acessadas com um token válido
 
 ----------------------------------------------------------------
 
 ## 7. DOCUMENTAÇÃO SWAGGER
 ----------------------
-A documentação Swagger é gerada automaticamente com base nos decorators.
+A documentação da API é gerada automaticamente via Swagger.
 
-URL:
+Acesse:
 http://localhost:3000/docs
 
-No Swagger é possível:
-- Testar endpoints
-- Realizar login
-- Autorizar com JWT
-- Executar CRUD de alunos
+Funcionalidades:
+- Visualizar todos os endpoints
+- Testar requisições diretamente pelo navegador
+- Autenticar usando JWT via botão "Authorize"
+
+
+### Testes de Autenticação
+
+1. Acesse um endpoint de alunos sem autenticação  
+   → Retorna 401 (Unauthorized)
+
+2. Crie um usuário via `POST /auth/register`
+
+3. Faça login via `POST /auth/login`  
+   → Copie o token JWT retornado
+
+4. No Swagger, clique em "Authorize" e informe:
+   Bearer SEU_TOKEN
+
+5. Acesse novamente os endpoints de alunos  
+   → Acesso permitido
+
 
 ----------------------------------------------------------------
 

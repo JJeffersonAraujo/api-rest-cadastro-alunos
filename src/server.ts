@@ -1,16 +1,20 @@
-// src/server.ts
-
 import "reflect-metadata";
-import { createExpressServer } from "routing-controllers";
+import express from "express";
+import { useExpressServer } from "routing-controllers";
 import { AppDataSource } from "./database/data-source";
 import { createSwaggerApp } from "./swagger";
 
-const app = createExpressServer({
+const app = express();
+
+// ✅ JSON BODY PARSER (OBRIGATÓRIO)
+app.use(express.json());
+
+useExpressServer(app, {
   controllers: [__dirname + "/controllers/*.ts"],
 });
 
 const swaggerApp = createSwaggerApp();
-app.use(swaggerApp); 
+app.use(swaggerApp);
 
 AppDataSource.initialize().then(() => {
   console.log("Conectado ao banco");
