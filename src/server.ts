@@ -10,7 +10,7 @@ const app = createExpressServer({
 });
 
 const swaggerApp = createSwaggerApp();
-app.use(swaggerApp); // adiciona o /docs à API
+app.use(swaggerApp); 
 
 AppDataSource.initialize().then(() => {
   console.log("Conectado ao banco");

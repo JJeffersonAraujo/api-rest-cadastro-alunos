@@ -1,117 +1,212 @@
-# API REST CRUD
+# API REST CRUD – Cadastro de Alunos
+=================================
 
-Este documento serve como um guia oficial da API, contendo instruções de instalação, configuração, estrutura do banco, migrations do TypeORM, rotas disponíveis e orientações para outros desenvolvedores utilizarem e expandirem o projeto de forma segura.
+Este documento serve como guia oficial da API REST CRUD de Cadastro de Alunos.
+Ele descreve como configurar, executar, autenticar (JWT) e testar a aplicação,
+além de apresentar a documentação Swagger.
 
-________________________________________
+----------------------------------------------------------------
 
-## Índice
+### ÍNDICE
+1. Descrição Geral
+2. Tecnologias Utilizadas
+3. Pré-requisitos
+4. Instalação e Configuração
+5. Variáveis de Ambiente
+6. Autenticação (JWT)
+7. Documentação Swagger
+8. Estrutura do Projeto
+9. Migrations e Banco de Dados
+10. Rotas da API
+11. Como Testar a Aplicação
+12. Boas Práticas
 
-1.	Descrição Geral
-2.	Tecnologias Utilizadas
-3.	Pré-requisitos
-4.	Instalação e Configuração
-5.	Scripts Disponíveis
-6.	Estrutura do Projeto
-7.	Configuração do Banco (TypeORM)
-8.	Migrations
-9.	Entidades (Models)
-10.	Rotas da API
-11.	Como Consumir a API
-12.	Boas Práticas e Padrões
+----------------------------------------------------------------
 
-________________________________________
+## 1. DESCRIÇÃO GERAL
+------------------
+Esta é uma API RESTful CRUD desenvolvida com Node.js, TypeScript e TypeORM,
+utilizando PostgreSQL (Neon) como banco de dados.
 
-## Descrição Geral
+A API possui:
+- CRUD completo de alunos
+- Cadastro e autenticação de usuários
+- Autenticação baseada em JWT
+- Senhas criptografadas com bcryptjs
+- Documentação automática via Swagger
 
-Esta é uma API RESTful CRUD construída utilizando Node.js, Express, TypeScript e TypeORM. O objetivo é fornecer uma base sólida para criação de APIs profissionais, seguindo padrões de arquitetura e boas práticas de desenvolvimento.
-A API oferece: - Estrutura em camadas (Controller, Service, Repository) - Migrations e Entities com TypeORM - Validações - Rotas REST - Documentação completa
-________________________________________
+----------------------------------------------------------------
 
-## Tecnologias Utilizadas
+## 2. TECNOLOGIAS UTILIZADAS
+------------------------
+- Node.js v22.18.0
+- TypeScript
+- Express
+- routing-controllers
+- TypeORM
+- PostgreSQL (Neon)
+- jsonwebtoken (JWT)
+- bcryptjs
+- swagger-ui-express
+- routing-controllers-openapi
+- dotenv
 
-•	Node.js - v22.18.0
-•	Express
-•	TypeScript
-•	TypeORM
-•	PostgreSQL (ou outro conforme necessário)
-•	ts-node-dev
-•	dotenv
-________________________________________
+----------------------------------------------------------------
 
-## Pré-requisitos
+## 3. PRÉ-REQUISITOS
+-----------------
+- Node.js 18+
+- npm ou yarn
+- Conta no Neon (PostgreSQL)
+- Git
 
-Antes de começar, certifique-se de ter instalado: - Node.js 18+ - npm ou yarn - Banco de dados PostgreSQL (recomendado)
-________________________________________
+----------------------------------------------------------------
 
-## Instalação e Configuração
+## 4. INSTALAÇÃO E CONFIGURAÇÃO
+---------------------------
 
-### 1️ - Clonar o repositório
-
+1) Clonar o repositório:
 git clone https://seu-repositorio.git
-cd nome-do-projeto
+cd api-rest-cadastro-alunos
 
-### 2️ - Instalar dependências
-
+2) Instalar dependências:
 npm install
 
-### 3️ - Criar o arquivo .env
+----------------------------------------------------------------
 
-DATABASE_HOST=localhost
-DATABASE_PORT=5432
-DATABASE_USER=postgres
-DATABASE_PASSWORD=senha
-DATABASE_NAME=minha_api
+## 5. VARIÁVEIS DE AMBIENTE (.env)
+------------------------------
 
-### 4️ - Gerar e executar migrations
+Exemplo de arquivo .env:
 
-Gerar um banco no Neon
-Preenche o endereço do banco no .env
-rodar os camandos para gerar a tabela e migrar:
-npx typeorm-ts-node-commonjs migration:generate -d src/database/data-source.ts src/migrations/CriarTabelaAlunos
-npm run migration:run
+DATABASE_URL=postgresql://usuario:senha@host.neon.tech/dbname
+JWT_SECRET=minha_chave_super_secreta
+JWT_EXPIRES_IN=1d
 
-### 5️ - Iniciar o servidor
+----------------------------------------------------------------
 
-npm run dev
+## 6. AUTENTICAÇÃO (JWT)
+--------------------
+A API utiliza JWT para proteger rotas sensíveis.
 
-________________________________________
+Fluxo:
+1. Usuário se registra
+2. Usuário realiza login
+3. API retorna um token JWT
+4. O token deve ser enviado no header Authorization
 
-## Estrutura do Projeto
+Exemplo:
+Authorization: Bearer SEU_TOKEN_JWT
+
+As rotas de alunos são protegidas por autenticação.
+
+----------------------------------------------------------------
+
+## 7. DOCUMENTAÇÃO SWAGGER
+----------------------
+A documentação Swagger é gerada automaticamente com base nos decorators.
+
+URL:
+http://localhost:3000/docs
+
+No Swagger é possível:
+- Testar endpoints
+- Realizar login
+- Autorizar com JWT
+- Executar CRUD de alunos
+
+----------------------------------------------------------------
+
+## 8. ESTRUTURA DO PROJETO
+----------------------
 
 src/
-|	├── controllers/
-|	├── database/
-|	├── entity/
-|	├── migrations/
-|	├── routes/
-|	├── services/
-├── server.ts
+├─ controllers/
+│  ├─ AlunoController.ts
+│  └─ AuthController.ts
+├─ database/
+│  └─ data-source.ts
+├─ entity/
+│  ├─ Aluno.ts
+│  └─ User.ts
+├─ migrations/
+├─ services/
+│  ├─ AlunoService.ts
+│  ├─ jwtService.ts
+│  ├─ password.ts
+│  └─ authMiddleware.ts
+├─ server.ts
+└─ swagger.ts
 
-________________________________________
+----------------------------------------------------------------
 
-## Configuração do Banco (TypeORM)
+## 9. MIGRATIONS E BANCO DE DADOS
+-----------------------------
 
-Arquivo data-source.ts:
+1) Criar banco no Neon
+2) Atualizar DATABASE_URL no .env
+3) Gerar migration:
+npx typeorm-ts-node-commonjs migration:generate -d src/database/data-source.ts src/migrations/CriarTabelas
 
-import { DataSource } from "typeorm";
-import dotenv from "dotenv";
-dotenv.config();
+4) Executar migration:
+npm run migration:run
 
-export const AppDataSource = new DataSource({
-  type: "postgres",
-  host: process.env.DATABASE_HOST,
-  port: Number(process.env.DATABASE_PORT),
-  username: process.env.DATABASE_USER,
-  password: process.env.DATABASE_PASSWORD,
-  database: process.env.DATABASE_NAME,
-  synchronize: false,
-  logging: false,
-  entities: ["src/entities/*.ts"],
-  migrations: ["src/migrations/*.ts"],
-});
+----------------------------------------------------------------
 
-________________________________________
+## 10. ROTAS DA API
+----------------
 
+Auth:
+POST /auth/registro  -> Registrar usuário
+POST /auth/login     -> Login e geração do token JWT
 
-## Licença
-Projeto livre para uso interno.
+Alunos (rotas protegidas):
+GET    /alunos
+GET    /alunos/:id
+POST   /alunos
+PUT    /alunos/:id
+DELETE /alunos/:id
+
+----------------------------------------------------------------
+
+## 11. COMO TESTAR A APLICAÇÃO
+--------------------------
+
+1) Iniciar a API:
+npm run dev
+
+2) Acessar Swagger:
+http://localhost:3000/docs
+
+3) Registrar usuário:
+POST /auth/registro
+
+4) Fazer login:
+POST /auth/login
+
+5) Copiar o token JWT retornado
+
+6) No Swagger, clicar em "Authorize":
+Bearer SEU_TOKEN_JWT
+
+7) Testar as rotas de alunos:
+GET /alunos
+POST /alunos
+PUT /alunos/{id}
+DELETE /alunos/{id}
+
+----------------------------------------------------------------
+
+## 12. BOAS PRÁTICAS
+----------------
+- Nunca versionar o arquivo .env
+- Utilizar JWT para rotas protegidas
+- Manter serviços desacoplados dos controllers
+- Usar migrations para alterações no banco
+- Documentar novas rotas no Swagger
+
+----------------------------------------------------------------
+
+### LICENÇA
+-------
+Projeto livre para uso educacional e interno.
