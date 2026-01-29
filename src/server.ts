@@ -42,6 +42,15 @@ const swaggerSpec = routingControllersToSpec(
             senha: { type: "string", example: "123456" },
           },
         },
+        RegisterAlunoDTO: {
+          type: "object",
+          required: ["nome", "email"],
+          properties: {
+            nome: { type: "string", example: "Jefferson" },
+            email: { type: "string", example: "jefferson@email.com" },
+            data_nascimento: { type: "string", example: "2000-05-20" },
+          },
+        },
         LoginDTO: {
           type: "object",
           required: ["email", "senha"],
@@ -63,5 +72,6 @@ AppDataSource.initialize().then(() => {
   app.listen(3000, () => {
     console.log("Servidor rodando em http://localhost:3000");
     console.log("Swagger em http://localhost:3000/docs");
+    console.log("Banco Neon rodando");
   });
 });

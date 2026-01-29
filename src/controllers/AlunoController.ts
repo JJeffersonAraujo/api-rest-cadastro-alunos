@@ -34,6 +34,16 @@ export class AlunoController {
   }
 
   @Post()
+  @OpenAPI({
+  requestBody: {
+    required: true,
+    content: {
+      "application/json": {
+        schema: { $ref: "#/components/schemas/RegisterAlunoDTO" }
+      }
+    }
+  }
+})
   @HttpCode(201)
   criar(@Body() dados: any) {
     return this.alunoService.criarAluno(dados);

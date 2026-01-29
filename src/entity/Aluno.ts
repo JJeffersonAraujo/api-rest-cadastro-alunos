@@ -4,7 +4,7 @@ import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 export class Aluno {
 
   @PrimaryGeneratedColumn()
-  id!: number; // ID é gerado automaticamente
+  id!: number; 
 
   @Column()
   nome!: string;
@@ -13,5 +13,7 @@ export class Aluno {
   email!: string;
 
   @Column({ type: "date", nullable: true })
-  data_nascimento?: string; // opcional
+  data_nascimento?: string; 
 }
+
+

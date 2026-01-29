@@ -2,13 +2,42 @@ import { JsonController, Post, Body, HttpCode } from "routing-controllers";
 import { OpenAPI } from "routing-controllers-openapi";
 import { AppDataSource } from "../database/data-source";
 import { User } from "../entity/User";
+import { Aluno } from "../entity/Aluno";
 import bcrypt from "bcryptjs";
 import { gerarToken } from "../services/jwtService";
 import { RegisterUserDTO } from "../dtos/RegisterUserDTO";
 import { LoginDTO } from "../dtos/LoginDTO";
+import { RegisterAlunoDTO } from "../dtos/RegisterAlunoDTO";
 
 @JsonController("/auth")
 export class AuthController {
+
+  @Post("/registro-aluno")
+  @HttpCode(201)
+  @OpenAPI({
+    summary: "Registrar aluno",
+    requestBody: {
+      required: true,
+      content: {
+        "application/json": {
+          schema: { $ref: "#/components/schemas/RegisterAlunoDTO" },
+        },
+      },
+    },
+  })
+  async registroAluno(@Body() body: RegisterAlunoDTO) {
+    const repo = AppDataSource.getRepository(Aluno);
+
+    const aluno = repo.create({
+      nome: body.nome,
+      email: body.email,
+      data_nascimento: body.data_nascimento,
+    });
+
+    await repo.save(aluno);
+
+    return { message: "Aluno criado com sucesso" };
+  }
 
   @Post("/registro")
   @HttpCode(201)
