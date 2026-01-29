@@ -20,7 +20,7 @@ export class AlunoService {
   async atualizarAluno(id: number, dados: Partial<Aluno>) {
     const aluno = await this.repo.findOne({ where: { id } });
 
-    if (!aluno) return null;
+    if (!aluno) return null; 
 
     Object.assign(aluno, dados);
     return this.repo.save(aluno);

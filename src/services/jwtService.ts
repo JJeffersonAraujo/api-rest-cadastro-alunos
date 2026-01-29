@@ -1,23 +1,35 @@
-import jwt, { Secret, SignOptions } from "jsonwebtoken";
-import { StringValue } from "ms";
+import jwt from "jsonwebtoken";
 
-interface JwtPayload {
+export interface AuthTokenPayload {
   id: number;
   email: string;
 }
 
-const JWT_SECRET: Secret = process.env.JWT_SECRET as Secret;
+const JWT_SECRET: string = process.env.JWT_SECRET ?? "";
 
-const JWT_EXPIRES_IN = (process.env.JWT_EXPIRES_IN || "1d") as StringValue;
-
-const JWT_OPTIONS: SignOptions = {
-  expiresIn: JWT_EXPIRES_IN,
-};
-
-export function gerarToken(payload: JwtPayload): string {
-  return jwt.sign(payload, JWT_SECRET, JWT_OPTIONS);
+if (!JWT_SECRET) {
+  throw new Error("JWT_SECRET não definido no .env");
 }
 
-export function validarToken(token: string) {
-  return jwt.verify(token, JWT_SECRET);
+function isAuthTokenPayload(payload: any): payload is AuthTokenPayload {
+  return (
+    payload &&
+    typeof payload === "object" &&
+    typeof payload.id === "number" &&
+    typeof payload.email === "string"
+  );
+}
+
+export function gerarToken(payload: AuthTokenPayload): string {
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: "1d" });
+}
+
+export function validarToken(token: string): AuthTokenPayload {
+  const decoded = jwt.verify(token, JWT_SECRET);
+
+  if (!isAuthTokenPayload(decoded)) {
+    throw new Error("Token inválido");
+  }
+
+  return decoded;
 }

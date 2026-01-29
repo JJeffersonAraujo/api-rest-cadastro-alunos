@@ -1,10 +1,3 @@
-/**
- * Entidade Aluno
- *
- * Representa a tabela "alunos" no banco de dados.
- * Cada propriedade vira uma coluna.
- */
-
 import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 
 @Entity("alunos")

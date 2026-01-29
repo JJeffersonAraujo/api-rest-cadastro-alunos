@@ -1,70 +1,66 @@
-import { Controller, Post, Body } from "routing-controllers";
+import { JsonController, Post, Body, HttpCode } from "routing-controllers";
+import { OpenAPI } from "routing-controllers-openapi";
 import { AppDataSource } from "../database/data-source";
 import { User } from "../entity/User";
 import bcrypt from "bcryptjs";
-import { OpenAPI } from "routing-controllers-openapi";
 import { gerarToken } from "../services/jwtService";
+import { RegisterUserDTO } from "../dtos/RegisterUserDTO";
+import { LoginDTO } from "../dtos/LoginDTO";
 
-@Controller("/auth")
+@JsonController("/auth")
 export class AuthController {
 
   @Post("/registro")
+  @HttpCode(201)
   @OpenAPI({
-    summary: "Registrar novo usuário",
-    description: "Cria um usuário com nome, email e senha criptografada.",
-  })
-  async registro(@Body() body: any) {
-    const { name, email, senha } = body;
-
-    if (!name || !email || !senha) {
-      return { message: "Todos os campos são obrigatórios." };
-    }
-
-    const repoUser = AppDataSource.getRepository(User);
-
-    const senhaHash = await bcrypt.hash(senha, 10);
-
-    const user = repoUser.create({ name, email, senha: senhaHash });
-    const userSalvo = await repoUser.save(user);
-
-    return {
-      message: "Usuário registrado com sucesso.",
-      user: {
-        id: userSalvo.id,
-        name: userSalvo.name,
-        email: userSalvo.email,
+    summary: "Registrar usuário",
+    requestBody: {
+      required: true,
+      content: {
+        "application/json": {
+          schema: { $ref: "#/components/schemas/RegisterUserDTO" },
+        },
       },
-    };
-  }
-
-  // 🔑 LOGIN COM JWT
-  @Post("/login")
-  @OpenAPI({
-    summary: "Login",
-    description: "Autentica o usuário e retorna um token JWT",
+    },
   })
-  async login(@Body() body: any) {
-    const { email, senha } = body;
+  async registro(@Body() body: RegisterUserDTO) {
+    const repo = AppDataSource.getRepository(User);
 
-    const repoUser = AppDataSource.getRepository(User);
+    const senhaHash = await bcrypt.hash(body.senha, 10);
 
-    const user = await repoUser.findOne({ where: { email } });
-
-    if (!user) {
-      return { message: "Credenciais inválidas" };
-    }
-
-    const senhaValida = await bcrypt.compare(senha, user.senha);
-
-    if (!senhaValida) {
-      return { message: "Credenciais inválidas" };
-    }
-
-    const token = gerarToken({
-      id: user.id,
-      email: user.email,
+    const user = repo.create({
+      name: body.name,
+      email: body.email,
+      senha: senhaHash,
     });
 
+    await repo.save(user);
+
+    return { message: "Usuário criado com sucesso" };
+  }
+
+  @Post("/login")
+  @HttpCode(200)
+  @OpenAPI({
+    summary: "Login",
+    requestBody: {
+      required: true,
+      content: {
+        "application/json": {
+          schema: { $ref: "#/components/schemas/LoginDTO" },
+        },
+      },
+    },
+  })
+  async login(@Body() body: LoginDTO) {
+    const repo = AppDataSource.getRepository(User);
+    const user = await repo.findOne({ where: { email: body.email } });
+
+    if (!user || !(await bcrypt.compare(body.senha, user.senha))) {
+      return { message: "Credenciais inválidas" };
+    }
+
+    const token = gerarToken({ id: user.id, email: user.email });
     return { token };
   }
 }

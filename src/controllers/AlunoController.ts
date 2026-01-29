@@ -10,57 +10,43 @@ import {
   NotFoundError,
   UseBefore,
 } from "routing-controllers";
-
+import { OpenAPI } from "routing-controllers-openapi";
 import { AlunoService } from "../services/AlunoService";
 import { AuthMiddleware } from "./AuthMiddleware";
 
 @JsonController("/alunos")
-@UseBefore(AuthMiddleware) // 🔒 TODAS as rotas protegidas
+@UseBefore(AuthMiddleware)
+@OpenAPI({ security: [{ bearerAuth: [] }] })
 export class AlunoController {
 
   private alunoService = new AlunoService();
 
   @Get()
-  async listar() {
-    return await this.alunoService.getAlunos();
+  listar() {
+    return this.alunoService.getAlunos();
   }
 
   @Get("/:id")
   async buscar(@Param("id") id: number) {
     const aluno = await this.alunoService.getAluno(id);
-
-    if (!aluno) {
-      throw new NotFoundError("Aluno não encontrado");
-    }
-
+    if (!aluno) throw new NotFoundError("Aluno não encontrado");
     return aluno;
   }
 
   @Post()
   @HttpCode(201)
-  async criar(@Body() dados: any) {
-    return await this.alunoService.criarAluno(dados);
+  criar(@Body() dados: any) {
+    return this.alunoService.criarAluno(dados);
   }
 
   @Put("/:id")
-  async atualizar(@Param("id") id: number, @Body() dados: any) {
-    const aluno = await this.alunoService.atualizarAluno(id, dados);
-
-    if (!aluno) {
-      throw new NotFoundError("Aluno não encontrado");
-    }
-
-    return aluno;
+  atualizar(@Param("id") id: number, @Body() dados: any) {
+    return this.alunoService.atualizarAluno(id, dados);
   }
 
   @Delete("/:id")
   async deletar(@Param("id") id: number) {
-    const deletado = await this.alunoService.deletarAluno(id);
-
-    if (!deletado) {
-      throw new NotFoundError("Aluno não encontrado");
-    }
-
-    return { mensagem: "Aluno removido com sucesso" };
+    await this.alunoService.deletarAluno(id);
+    return { message: "Aluno removido com sucesso" };
   }
 }

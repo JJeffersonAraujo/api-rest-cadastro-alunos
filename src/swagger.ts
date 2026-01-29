@@ -12,7 +12,7 @@ export function createSwaggerApp() {
 
   const swaggerSpec = routingControllersToSpec(
     getMetadataArgsStorage(),
-    {},
+    {routePrefix: "/api",},
     {
       info: {
         title: "API - Alunos",
